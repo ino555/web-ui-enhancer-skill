@@ -42,6 +42,8 @@ See the [`examples/`](./examples/) folder for live HTML output files you can ope
 $target = "$env:USERPROFILE\.claude\skills\web-ui-enhancer"
 New-Item -ItemType Directory -Force -Path $target | Out-Null
 Invoke-WebRequest "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md" -OutFile "$target\SKILL.md"
+# Remove read-only attribute if set
+Set-ItemProperty "$target\SKILL.md" -Name IsReadOnly -Value $false
 Write-Host "Installed! Restart Claude to activate."
 ```
 
@@ -50,6 +52,7 @@ Write-Host "Installed! Restart Claude to activate."
 mkdir -p "$HOME/.claude/skills/web-ui-enhancer"
 curl -o "$HOME/.claude/skills/web-ui-enhancer/SKILL.md" \
   "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md"
+chmod 644 "$HOME/.claude/skills/web-ui-enhancer/SKILL.md"
 echo "Installed! Restart Claude to activate."
 ```
 
@@ -57,7 +60,12 @@ echo "Installed! Restart Claude to activate."
 1. Copy `SKILL.md` from this repo into:
    - **Windows:** `%USERPROFILE%\.claude\skills\web-ui-enhancer\SKILL.md`
    - **macOS/Linux:** `~/.claude/skills/web-ui-enhancer/SKILL.md`
-2. Restart Claude
+2. **Important:** Make sure the file is not read-only.
+   - Windows: right-click → Properties → uncheck "Read-only"
+   - macOS/Linux: `chmod 644 ~/.claude/skills/web-ui-enhancer/SKILL.md`
+3. Restart Claude
+
+> **Troubleshooting:** If the skill doesn't appear after restarting, check that `SKILL.md` is not marked as read-only. This can happen when copying files from certain sources.
 
 ## Usage
 
