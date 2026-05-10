@@ -39,32 +39,37 @@ See the [`examples/`](./examples/) folder for live HTML output files you can ope
 
 **Windows (PowerShell):**
 ```powershell
-$base = "$env:APPDATA\Claude\local-agent-mode-sessions\skills-plugin"
-$skillsDir = Get-ChildItem $base -Recurse -Filter "skill-creator" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Parent
-$target = Join-Path $skillsDir.FullName "web-ui-enhancer"
-New-Item -ItemType Directory -Force -Path $target | Out-Null
-Invoke-WebRequest "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md" -OutFile "$target\SKILL.md"
-Write-Host "Installed to: $target"
+$target = "$env:USERPROFILE\.claude\plugins\web-ui-enhancer"
+New-Item -ItemType Directory -Force -Path "$target\.claude-plugin" | Out-Null
+New-Item -ItemType Directory -Force -Path "$target\skills\web-ui-enhancer" | Out-Null
+'{"name":"web-ui-enhancer","version":"1.0.0","description":"Modernizes static HTML/CSS/JS sites with contemporary design","author":{"name":"ino555","url":"https://github.com/ino555/web-ui-enhancer-skill"}}' | Out-File "$target\.claude-plugin\plugin.json" -Encoding utf8
+Invoke-WebRequest "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md" -OutFile "$target\skills\web-ui-enhancer\SKILL.md"
+Write-Host "Installed! Restart Claude to activate."
 ```
 
 **macOS / Linux (bash):**
 ```bash
-BASE="$HOME/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin"
-SKILLS=$(find "$BASE" -name "skill-creator" -type d 2>/dev/null | head -1 | xargs dirname)
-mkdir -p "$SKILLS/web-ui-enhancer"
-curl -o "$SKILLS/web-ui-enhancer/SKILL.md" \
+TARGET="$HOME/.claude/plugins/web-ui-enhancer"
+mkdir -p "$TARGET/.claude-plugin" "$TARGET/skills/web-ui-enhancer"
+echo '{"name":"web-ui-enhancer","version":"1.0.0","description":"Modernizes static HTML/CSS/JS sites","author":{"name":"ino555","url":"https://github.com/ino555/web-ui-enhancer-skill"}}' > "$TARGET/.claude-plugin/plugin.json"
+curl -o "$TARGET/skills/web-ui-enhancer/SKILL.md" \
   "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md"
-echo "Installed to: $SKILLS/web-ui-enhancer"
+echo "Installed! Restart Claude to activate."
 ```
 
 ### Manual install
-1. Copy `SKILL.md` into your Claude skills directory:
-   - **Windows:** `%APPDATA%\Claude\local-agent-mode-sessions\skills-plugin\...\skills\web-ui-enhancer\SKILL.md`
-   - **macOS:** `~/Library/Application Support/Claude/local-agent-mode-sessions/.../skills/web-ui-enhancer/SKILL.md`
-   
-   > Tip: Find the right path by searching for the `skill-creator` folder — `web-ui-enhancer` goes in the same `skills/` parent directory.
-
-2. Restart Claude
+1. Create this folder structure:
+   ```
+   ~/.claude/plugins/web-ui-enhancer/
+   ├── .claude-plugin/
+   │   └── plugin.json
+   └── skills/
+       └── web-ui-enhancer/
+           └── SKILL.md
+   ```
+2. Copy `SKILL.md` from this repo into `skills/web-ui-enhancer/`
+3. Create `plugin.json` with: `{"name":"web-ui-enhancer","version":"1.0.0"}`
+4. Restart Claude
 
 ## Usage
 
