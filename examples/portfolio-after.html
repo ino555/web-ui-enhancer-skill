@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>John Doe — Developer</title>
+
+  <!-- Fonts: Space Grotesk (headlines) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── Design tokens ─────────────────────────────────────── */
+    :root {
+      --bg:        #faf5ef;
+      --surface:   #ffffff;
+      --accent:    #e85d26;
+      --accent-dk: #c04516;
+      --ink:       #111111;
+      --muted:     #6b6055;
+      --rule:      #e2d9cf;
+      --radius-sm: 6px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --max-w:     1140px;
+      --pad-x:     clamp(1.25rem, 5vw, 3rem);
+      --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    img  { display: block; max-width: 100%; }
+    a    { color: inherit; text-decoration: none; }
+
+    /* ─── Base ──────────────────────────────────────────────── */
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Noise texture overlay ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ─── Layout wrapper ────────────────────────────────────── */
+    .wrap {
+      max-width: var(--max-w);
+      margin-inline: auto;
+      padding-inline: var(--pad-x);
+    }
+
+    /* ─── NAV ───────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250, 245, 239, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rule);
+      transition: box-shadow 300ms var(--ease);
+    }
+    nav.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin-inline: auto;
+      padding-inline: var(--pad-x);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 0.25rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 999px;
+      transition: color 200ms, background 200ms;
+    }
+    .nav-links a:hover {
+      color: var(--ink);
+      background: var(--rule);
+    }
+
+    /* ─── HERO ──────────────────────────────────────────────── */
+    .hero {
+      padding-top: clamp(4rem, 10vw, 8rem);
+      padding-bottom: clamp(3rem, 7vw, 6rem);
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 28px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(3.25rem, 9vw, 7.5rem);
+      font-weight: 800;
+      line-height: 0.93;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      max-width: 12ch;
+    }
+    .hero-title .accent-line {
+      color: var(--accent);
+      display: block;
+    }
+    .hero-sub-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .hero-desc {
+      max-width: 42ch;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 14px 26px;
+      border-radius: 999px;
+      transition: background 220ms, transform 220ms var(--ease);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hero-cta:hover {
+      background: var(--accent);
+      transform: translateY(-2px);
+    }
+    .hero-cta svg { transition: transform 220ms var(--ease); }
+    .hero-cta:hover svg { transform: translateX(3px); }
+
+    /* ─── Divider ───────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--rule);
+      margin-block: 0;
+    }
+
+    /* ─── SECTION COMMON ────────────────────────────────────── */
+    .section {
+      padding-block: clamp(3.5rem, 8vw, 6rem);
+    }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+    .section-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ─── ABOUT ─────────────────────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    @media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; gap: 2rem; } }
+    .about-body {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .about-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .stat-card .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-card .stat-num em {
+      color: var(--accent);
+      font-style: normal;
+    }
+    .stat-card .stat-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+
+    /* ─── SKILLS ────────────────────────────────────────────── */
+    .skills-section { background: var(--surface); }
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .skill-chip {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1.5px solid var(--rule);
+      border-radius: 999px;
+      padding: 7px 18px;
+      transition: border-color 220ms, background 220ms, color 220ms, transform 200ms var(--ease);
+      cursor: default;
+    }
+    .skill-chip:hover {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* ─── PROJECTS — Bento grid ──────────────────────────────── */
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 220px;
+      gap: 1rem;
+    }
+    @media (max-width: 900px) {
+      .bento { grid-template-columns: 1fr 1fr; grid-auto-rows: auto; }
+      .bento-card { min-height: 200px; }
+      .bento-card.large,
+      .bento-card.tall { grid-column: span 1; grid-row: span 1; }
+    }
+    @media (max-width: 560px) {
+      .bento { grid-template-columns: 1fr; }
+    }
+
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+      transition: transform 240ms var(--ease), box-shadow 240ms var(--ease), border-color 240ms;
+      cursor: pointer;
+    }
+    .bento-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 300ms var(--ease);
+    }
+    .bento-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+      border-color: transparent;
+    }
+    .bento-card:hover::after { opacity: 0.06; }
+
+    /* card size variants */
+    .bento-card.large   { grid-column: span 4; grid-row: span 2; }
+    .bento-card.medium  { grid-column: span 2; grid-row: span 1; }
+    .bento-card.tall    { grid-column: span 2; grid-row: span 2; }
+
+    /* featured card */
+    .bento-card.featured { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .bento-card.featured .card-label { color: rgba(255,255,255,0.45); }
+    .bento-card.featured .card-title { color: #fff; }
+    .bento-card.featured .card-desc { color: rgba(255,255,255,0.65); }
+    .bento-card.featured .card-link { color: #fff; border-color: rgba(255,255,255,0.25); }
+    .bento-card.featured .card-link:hover { background: var(--accent); border-color: var(--accent); }
+
+    .card-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .card-body { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.6rem; }
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .bento-card.large .card-title {
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      border: 1.5px solid var(--rule);
+      border-radius: 999px;
+      padding: 6px 16px;
+      margin-top: 0.5rem;
+      align-self: flex-start;
+      transition: background 200ms, border-color 200ms, color 200ms, transform 200ms var(--ease);
+    }
+    .card-link:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: translateX(2px);
+    }
+
+    /* accent dot on top-right of cards */
+    .bento-card .dot {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.12;
+      transition: opacity 300ms;
+    }
+    .bento-card:hover .dot { opacity: 0.22; }
+    .bento-card.featured .dot { background: #fff; opacity: 0.1; }
+
+    /* ─── CONTACT STRIP ──────────────────────────────────────── */
+    .contact-strip {
+      background: var(--ink);
+      padding-block: clamp(3rem, 7vw, 5rem);
+      color: #fff;
+    }
+    .contact-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .contact-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .contact-heading span { color: var(--accent); }
+    .contact-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 16px 32px;
+      border-radius: 999px;
+      transition: background 220ms, transform 220ms var(--ease);
+      white-space: nowrap;
+    }
+    .contact-cta:hover {
+      background: var(--accent-dk);
+      transform: translateY(-2px);
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding-block: 2rem;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 200ms;
+    }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ─── Scroll-reveal ──────────────────────────────────────── */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    [data-reveal].visible {
+      opacity: 1;
+      transform: none;
+    }
+    [data-reveal][data-delay="1"] { transition-delay: 80ms; }
+    [data-reveal][data-delay="2"] { transition-delay: 160ms; }
+    [data-reveal][data-delay="3"] { transition-delay: 240ms; }
+    [data-reveal][data-delay="4"] { transition-delay: 320ms; }
+
+    /* ─── Reduced motion ─────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      [data-reveal] { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── NAV ─────────────────────────────────────────────── -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">John<span>.</span></div>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-eyebrow">Full Stack Developer</div>
+      <h1 class="hero-title">
+        Building
+        <span class="accent-line">things</span>
+        that work.
+      </h1>
+      <div class="hero-sub-row">
+        <p class="hero-desc">
+          5 years crafting web applications — from database schema to pixel-perfect UI.
+          Currently open to new opportunities.
+        </p>
+        <a href="#contact" class="hero-cta">
+          Let's talk
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── ABOUT ────────────────────────────────────────────── -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="section-label">About me</div>
+      <div class="about-grid">
+        <div data-reveal>
+          <h2 class="section-heading">Turning ideas<br>into software.</h2>
+          <p class="about-body" style="margin-top: 1rem;">
+            I'm a full-stack developer who cares about both correctness and craft.
+            I love the moment when a messy problem clicks into an elegant solution —
+            whether that's a clean API design, a fast SQL query, or a UI that just
+            <em>feels</em> right. React, Node.js, Python — I go wherever the problem lives.
+          </p>
+        </div>
+        <div class="about-stat-grid" data-reveal data-delay="1">
+          <div class="stat-card">
+            <div class="stat-num">5<em>+</em></div>
+            <div class="stat-label">Years experience</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">30<em>+</em></div>
+            <div class="stat-label">Projects shipped</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">8</div>
+            <div class="stat-label">Core technologies</div>
+          </div>
+          <div class="stat-card" style="background:var(--accent); border-color:var(--accent);">
+            <div class="stat-num" style="color:#fff;">Open<em style="color:rgba(255,255,255,0.6)">.</em></div>
+            <div class="stat-label" style="color:rgba(255,255,255,0.75);">To opportunities</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SKILLS ───────────────────────────────────────────── -->
+  <section class="section skills-section" id="skills">
+    <div class="wrap">
+      <div class="section-label">Skills</div>
+      <h2 class="section-heading" data-reveal>The stack I reach for.</h2>
+      <div class="skills-wrap" style="margin-top: 2rem;" data-reveal data-delay="1">
+        <span class="skill-chip">React</span>
+        <span class="skill-chip">Node.js</span>
+        <span class="skill-chip">Python</span>
+        <span class="skill-chip">TypeScript</span>
+        <span class="skill-chip">PostgreSQL</span>
+        <span class="skill-chip">Docker</span>
+        <span class="skill-chip">AWS</span>
+        <span class="skill-chip">Git</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── PROJECTS ──────────────────────────────────────────── -->
+  <section class="section" id="projects">
+    <div class="wrap">
+      <div class="section-label">Selected work</div>
+      <h2 class="section-heading" data-reveal>Projects I'm proud of.</h2>
+
+      <!-- Bento grid: large(4col×2row) | tall(2col×2row) stacked with medium -->
+      <div class="bento" style="margin-top: 2rem;">
+
+        <!-- Card 1 — large featured -->
+        <div class="bento-card large featured" data-reveal>
+          <div class="dot"></div>
+          <div class="card-label">E-Commerce · Full Stack</div>
+          <div class="card-body">
+            <h3 class="card-title">E-Commerce Platform</h3>
+            <p class="card-desc">
+              Full-stack shopping platform with React frontend, Node.js backend,
+              and Stripe payments. Built for scale from day one.
+            </p>
+            <a href="#" class="card-link">
+              View project
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 6h7M6.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2 — tall (right column, top) -->
+        <div class="bento-card tall" data-reveal data-delay="1">
+          <div class="dot"></div>
+          <div class="card-label">Productivity · Real-time</div>
+          <div class="card-body">
+            <h3 class="card-title">Task Manager App</h3>
+            <p class="card-desc">
+              Real-time collaborative task management with WebSockets and
+              PostgreSQL. Zero latency between team members.
+            </p>
+            <a href="#" class="card-link">
+              View project
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 6h7M6.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3 — medium, bottom-left under the large card -->
+        <div class="bento-card medium" data-reveal data-delay="2"
+             style="grid-column: span 2; background: var(--accent); border-color: var(--accent); color:#fff;">
+          <div class="dot" style="background:#fff; opacity:0.12;"></div>
+          <div class="card-label" style="color:rgba(255,255,255,0.6);">Data · ML · Python</div>
+          <div class="card-body">
+            <h3 class="card-title" style="color:#fff;">ML Dashboard</h3>
+            <p class="card-desc" style="color:rgba(255,255,255,0.75);">
+              Visualizing machine learning model metrics with Python and D3.js.
+            </p>
+            <a href="#" class="card-link"
+               style="color:#fff; border-color:rgba(255,255,255,0.3);">
+              View project
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 6h7M6.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 4 — medium filler, bottom-right -->
+        <div class="bento-card medium" data-reveal data-delay="3">
+          <div class="dot"></div>
+          <div class="card-label">Open source</div>
+          <div class="card-body">
+            <h3 class="card-title">More on GitHub</h3>
+            <p class="card-desc">20+ public repos covering APIs, CLI tools, and experiments.</p>
+            <a href="#" class="card-link">
+              GitHub profile
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M2.5 6h7M6.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONTACT STRIP ─────────────────────────────────────── -->
+  <div class="contact-strip" id="contact">
+    <div class="wrap">
+      <div class="contact-inner" data-reveal>
+        <h2 class="contact-heading">
+          Got a project?<br>
+          <span>Let's build it.</span>
+        </h2>
+        <a href="mailto:john@email.com" class="contact-cta">
+          john@email.com
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────── -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-inner">
+        <div class="footer-logo">John<span>.</span></div>
+        <ul class="footer-links">
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Resume</a></li>
+        </ul>
+        <p class="footer-copy">© 2024 John Doe</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── SCRIPTS ───────────────────────────────────────────── -->
+  <script>
+    // Sticky nav shadow on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // Intersection Observer — scroll reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target); // fire once
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      revealObserver.observe(el);
+    });
+
+    // Hero title — immediate reveal on load (no delay needed)
+    const heroTitle = document.querySelector('.hero-title');
+    if (heroTitle) {
+      heroTitle.style.opacity = '1';
+      heroTitle.style.transform = 'none';
+    }
+  </script>
+</body>
+</html>

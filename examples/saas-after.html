@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Project Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design tokens ──────────────────────────────────────── */
+    :root {
+      --bg:          #f7f6f2;        /* warm paper off-white */
+      --surface:     #ffffff;
+      --surface-2:   #f0ede6;        /* slightly deeper warm gray */
+      --accent:      #e07d3c;        /* amber-orange — warm, confident */
+      --accent-dark: #c4622a;
+      --accent-faint:#fdf0e7;
+      --text:        #1c1917;        /* warm near-black */
+      --text-2:      #57534e;        /* secondary text */
+      --text-3:      #a8a29e;        /* muted */
+      --border:      #e7e4dc;
+      --shadow-sm:   0 1px 3px rgba(28,25,23,.06), 0 1px 2px rgba(28,25,23,.04);
+      --shadow-md:   0 4px 16px rgba(28,25,23,.08), 0 2px 6px rgba(28,25,23,.05);
+      --shadow-lg:   0 16px 48px rgba(28,25,23,.12), 0 4px 12px rgba(28,25,23,.06);
+      --radius-sm:   6px;
+      --radius-md:   14px;
+      --radius-lg:   20px;
+      --transition:  220ms cubic-bezier(.4,0,.2,1);
+      --max-w:       1140px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Reduced-motion support ─────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Nav ────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 0;
+      transition: background var(--transition), box-shadow var(--transition), padding var(--transition);
+    }
+    .nav.scrolled {
+      background: rgba(247,246,242,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 1px 0 var(--border);
+      padding: 12px 0;
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--text);
+      color: var(--bg) !important;
+      padding: 9px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600 !important;
+      font-size: 0.875rem !important;
+      transition: background var(--transition), transform var(--transition) !important;
+    }
+    .nav-cta:hover {
+      background: var(--accent) !important;
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+
+    /* ── Hero ───────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 2rem 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Subtle decorative stripe — no gradient blob */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 48%;
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 0;
+    }
+    .hero-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-faint);
+      border: 1px solid rgba(224,125,60,.25);
+      color: var(--accent-dark);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+    .hero h1 {
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(2.75rem, 5.5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+      position: relative;
+    }
+    .hero h1 em::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+      opacity: 0.3;
+      border-radius: 2px;
+    }
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--text-2);
+      line-height: 1.75;
+      margin-bottom: 2.5rem;
+      max-width: 480px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      font-family: 'Manrope', sans-serif;
+      letter-spacing: -0.01em;
+      position: relative;
+      overflow: hidden;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 14px rgba(224,125,60,.35);
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(224,125,60,.4);
+    }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color var(--transition);
+    }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-ghost svg { transition: transform var(--transition); }
+    .btn-ghost:hover svg { transform: translateX(3px); }
+    .hero-trust {
+      margin-top: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-avatars {
+      display: flex;
+    }
+    .hero-avatars span {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--surface-2);
+      color: var(--text-2);
+      margin-left: -8px;
+    }
+    .hero-avatars span:first-child { margin-left: 0; background: #d4bfa0; color: #5c3d1e; }
+    .hero-avatars span:nth-child(2) { background: #b5cce8; color: #1e3a5c; }
+    .hero-avatars span:nth-child(3) { background: #c8dbb8; color: #2d4a1e; }
+    .hero-trust-text {
+      font-size: 0.83rem;
+      color: var(--text-3);
+    }
+    .hero-trust-text strong { color: var(--text-2); }
+
+    /* Hero visual — right side */
+    .hero-visual {
+      position: relative;
+    }
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      animation: floatCard 5s ease-in-out infinite;
+    }
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    .hero-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .hero-card-title {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .task-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .task-check.done {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+    }
+    .task-text { font-size: 0.85rem; color: var(--text-2); flex: 1; }
+    .task-text.done-text { text-decoration: line-through; color: var(--text-3); }
+    .task-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag-design { background: #fde68a; color: #92400e; }
+    .tag-dev    { background: #dbeafe; color: #1e40af; }
+    .tag-qa     { background: #f3e8ff; color: #6b21a8; }
+    .hero-card-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mini-stat { text-align: center; }
+    .mini-stat .num {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--text);
+    }
+    .mini-stat .lbl { font-size: 0.72rem; color: var(--text-3); }
+    /* Floating mini badge */
+    .hero-float-badge {
+      position: absolute;
+      top: -18px; right: -14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: floatBadge 4s ease-in-out infinite 1.2s;
+    }
+    @keyframes floatBadge {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50%       { transform: translateY(-6px) rotate(0deg); }
+    }
+    .float-icon { font-size: 1.3rem; }
+    .float-text { font-size: 0.78rem; }
+    .float-text strong { display: block; font-family: 'Manrope', sans-serif; color: var(--text); font-size: 0.85rem; }
+    .float-text span { color: var(--text-3); }
+
+    /* ── Section wrapper ────────────────────────────────────── */
+    .section-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ── Section label ──────────────────────────────────────── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+
+    /* ── Divider ────────────────────────────────────────────── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+
+    /* ── Features ───────────────────────────────────────────── */
+    .features-section {
+      padding: 100px 0;
+    }
+    .features-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .features-header h2 {
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .features-header p {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.75;
+    }
+
+    /* Bento-style grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: auto;
+      gap: 1.25rem;
+    }
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+    .bento-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(224,125,60,.25);
+    }
+    .bento-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(224,125,60,.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .bento-card:hover::after { opacity: 1; }
+    .bento-card.wide { grid-column: span 2; }
+    .feature-icon-wrap {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-sm);
+      background: var(--accent-faint);
+      border: 1px solid rgba(224,125,60,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      transition: transform var(--transition);
+    }
+    .bento-card:hover .feature-icon-wrap {
+      transform: scale(1.08) rotate(-3deg);
+    }
+    .bento-card h3 {
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.015em;
+    }
+    .bento-card p {
+      font-size: 0.9rem;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    /* Stat highlight in wide card */
+    .bento-stat {
+      display: flex;
+      gap: 2rem;
+      margin-top: 20px;
+    }
+    .bento-stat-item .num {
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+    }
+    .bento-stat-item .lbl {
+      font-size: 0.8rem;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* ── Pricing ────────────────────────────────────────────── */
+    .pricing-section {
+      padding: 100px 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .pricing-header h2 {
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .pricing-header p {
+      font-size: 1.05rem;
+      color: var(--text-2);
+    }
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .plan {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      position: relative;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+    .plan:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+    .plan.popular {
+      background: var(--text);
+      border-color: var(--text);
+      color: #fff;
+    }
+    .plan.popular:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 56px rgba(28,25,23,.22);
+    }
+    .plan-badge {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .plan-name {
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+    .plan.popular .plan-name { color: rgba(255,255,255,.5); }
+    .plan-price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .plan-price .amount {
+      font-family: 'Manrope', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+    .plan.popular .plan-price .amount { color: #fff; }
+    .plan-price .period {
+      font-size: 0.9rem;
+      color: var(--text-3);
+    }
+    .plan.popular .plan-price .period { color: rgba(255,255,255,.45); }
+    .plan-desc {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .plan.popular .plan-desc { color: rgba(255,255,255,.65); }
+    .plan-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 20px;
+    }
+    .plan.popular .plan-divider { background: rgba(255,255,255,.12); }
+    .plan ul {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+    .plan ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 0.875rem;
+      color: var(--text-2);
+    }
+    .plan.popular ul li { color: rgba(255,255,255,.75); }
+    .plan ul li .check {
+      flex-shrink: 0;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent-faint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .plan.popular ul li .check { background: rgba(224,125,60,.25); }
+    .plan ul li .check svg {
+      width: 9px; height: 9px;
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .plan.popular ul li .check svg { stroke: var(--accent); }
+    .plan-btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      padding: 13px 24px;
+      border-radius: var(--radius-sm);
+      font-family: 'Manrope', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: -0.01em;
+      transition: background var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .plan-btn-outline {
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      background: var(--surface);
+    }
+    .plan-btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .plan-btn-fill {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(224,125,60,.3);
+    }
+    .plan-btn-fill:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 8px 24px rgba(224,125,60,.4);
+      transform: translateY(-1px);
+    }
+    .plan-btn-invert {
+      background: #fff;
+      color: var(--text);
+    }
+    .plan-btn-invert:hover {
+      background: var(--accent-faint);
+      color: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    /* ── CTA Strip ──────────────────────────────────────────── */
+    .cta-section {
+      padding: 100px 2rem;
+      text-align: center;
+    }
+    .cta-inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .cta-section h2 {
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .cta-section p {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      margin-bottom: 2.5rem;
+      line-height: 1.75;
+    }
+    .cta-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-logo {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-copy {
+      font-size: 0.82rem;
+      color: var(--text-3);
+    }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    .footer-links a:hover { color: var(--text-2); }
+
+    /* ── Scroll-reveal ──────────────────────────────────────── */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    [data-reveal].visible {
+      opacity: 1;
+      transform: none;
+    }
+    [data-reveal][data-delay="1"] { transition-delay: 80ms; }
+    [data-reveal][data-delay="2"] { transition-delay: 160ms; }
+    [data-reveal][data-delay="3"] { transition-delay: 240ms; }
+    [data-reveal][data-delay="4"] { transition-delay: 320ms; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero::before { display: none; }
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .bento-grid { grid-template-columns: 1fr 1fr; }
+      .bento-card.wide { grid-column: span 2; }
+      .plans { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-card.wide { grid-column: span 1; }
+      .hero { padding: 110px 1.25rem 60px; }
+      footer { justify-content: center; text-align: center; }
+      .footer-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ── -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">Task<span>Flow</span></a>
+      <ul class="nav-links">
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Docs</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#" class="nav-cta">Start Free Trial</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-inner">
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          New — Kanban 2.0 just shipped
+        </div>
+        <h1>Manage projects<br><em>smarter</em> together</h1>
+        <p class="hero-desc">
+          TaskFlow gives your team a single place to plan, track, and ship work — without the noise.
+          Built for how modern teams actually work.
+        </p>
+        <div class="hero-actions">
+          <a href="#" class="btn-primary">
+            Start for free
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 7h10M8 3l4 4-4 4"/>
+            </svg>
+          </a>
+          <a href="#" class="btn-ghost">
+            See how it works
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 6.5h9M7 2.5l4 4-4 4"/>
+            </svg>
+          </a>
+        </div>
+        <div class="hero-trust">
+          <div class="hero-avatars">
+            <span>KM</span><span>RA</span><span>SJ</span>
+          </div>
+          <p class="hero-trust-text">Trusted by <strong>12,000+ teams</strong> shipping faster every day</p>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-float-badge">
+          <span class="float-icon">🚀</span>
+          <div class="float-text">
+            <strong>Sprint completed</strong>
+            <span>2h ahead of schedule</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <span class="hero-card-title">Q2 Product Launch</span>
+            <span class="status-pill">On Track</span>
+          </div>
+          <div class="task-list">
+            <div class="task-item">
+              <div class="task-check done">✓</div>
+              <span class="task-text done-text">Design system tokens</span>
+              <span class="task-tag tag-design">Design</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check done">✓</div>
+              <span class="task-text done-text">API integration layer</span>
+              <span class="task-tag tag-dev">Dev</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">End-to-end test suite</span>
+              <span class="task-tag tag-qa">QA</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Launch checklist review</span>
+              <span class="task-tag tag-dev">Dev</span>
+            </div>
+          </div>
+          <div class="hero-card-footer">
+            <div class="mini-stat"><div class="num">24</div><div class="lbl">Tasks done</div></div>
+            <div class="mini-stat"><div class="num">6</div><div class="lbl">Remaining</div></div>
+            <div class="mini-stat"><div class="num">80%</div><div class="lbl">Complete</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── Features ── -->
+  <section class="features-section">
+    <div class="section-inner">
+      <div class="features-header">
+        <div class="section-label">Features</div>
+        <h2 data-reveal>Everything your team needs<br>to move fast</h2>
+        <p data-reveal data-delay="1">No bloat. No endless settings. Just the tools that actually matter when deadlines are real.</p>
+      </div>
+
+      <div class="bento-grid">
+        <div class="bento-card wide" data-reveal>
+          <div class="feature-icon-wrap">⚡</div>
+          <h3>Real-time sync — always up to date</h3>
+          <p>Changes appear the instant they happen. No refresh, no lag. Whether your team is across the hall or across the globe, everyone sees the same board.</p>
+          <div class="bento-stat">
+            <div class="bento-stat-item"><div class="num">&lt;50ms</div><div class="lbl">Sync latency</div></div>
+            <div class="bento-stat-item"><div class="num">99.9%</div><div class="lbl">Uptime SLA</div></div>
+          </div>
+        </div>
+
+        <div class="bento-card" data-reveal data-delay="1">
+          <div class="feature-icon-wrap">🤝</div>
+          <h3>Built for teams</h3>
+          <p>Comments, mentions, assignments, and shared views — collaboration that actually reduces meetings.</p>
+        </div>
+
+        <div class="bento-card" data-reveal data-delay="1">
+          <div class="feature-icon-wrap">📊</div>
+          <h3>Smart analytics</h3>
+          <p>Velocity trends, burndown charts, and bottleneck detection. Know where your team is slowing down before it becomes a crisis.</p>
+        </div>
+
+        <div class="bento-card" data-reveal data-delay="2">
+          <div class="feature-icon-wrap">🔗</div>
+          <h3>Deep integrations</h3>
+          <p>GitHub, Slack, Figma, and 40+ more. Your tools stay connected — not siloed.</p>
+        </div>
+
+        <div class="bento-card wide" data-reveal data-delay="2">
+          <div class="feature-icon-wrap">🎯</div>
+          <h3>Sprints and milestones that make sense</h3>
+          <p>Plan iterations with flexible sprint boards, track milestones on a timeline, and never lose sight of the big picture. TaskFlow adapts to your workflow, not the other way around.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ── Pricing ── -->
+  <section class="pricing-section">
+    <div class="section-inner">
+      <div class="pricing-header">
+        <div class="section-label">Pricing</div>
+        <h2 data-reveal>Simple, honest pricing</h2>
+        <p data-reveal data-delay="1">One plan, one price. No per-seat gotchas. Cancel any time.</p>
+      </div>
+
+      <div class="plans">
+
+        <div class="plan" data-reveal>
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">
+            <span class="amount">$0</span>
+            <span class="period">/month</span>
+          </div>
+          <p class="plan-desc">Perfect for small teams getting off the ground with project management.</p>
+          <div class="plan-divider"></div>
+          <ul>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Up to 3 projects
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              5 team members
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Basic analytics
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Email support
+            </li>
+          </ul>
+          <a href="#" class="plan-btn plan-btn-outline">Get started free</a>
+        </div>
+
+        <div class="plan popular" data-reveal data-delay="1">
+          <div class="plan-badge">Most popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">
+            <span class="amount">$12</span>
+            <span class="period">/month</span>
+          </div>
+          <p class="plan-desc">For growing teams that need more power, more people, and faster support.</p>
+          <div class="plan-divider"></div>
+          <ul>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Unlimited projects
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              25 team members
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Advanced analytics
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Priority support
+            </li>
+          </ul>
+          <a href="#" class="plan-btn plan-btn-fill">Start 14-day trial</a>
+        </div>
+
+        <div class="plan" data-reveal data-delay="2">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price">
+            <span class="amount">$49</span>
+            <span class="period">/month</span>
+          </div>
+          <p class="plan-desc">Full power, custom reports, dedicated support, and SSO for large teams.</p>
+          <div class="plan-divider"></div>
+          <ul>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Unlimited everything
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Unlimited members
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Custom reports &amp; exports
+            </li>
+            <li>
+              <span class="check"><svg viewBox="0 0 9 7"><polyline points="1 3.5 3.5 6 8 1"/></svg></span>
+              Dedicated success manager
+            </li>
+          </ul>
+          <a href="#" class="plan-btn plan-btn-outline">Contact sales</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="section-label" style="justify-content:center;">Get started</div>
+      <h2 data-reveal>Your team's best<br>sprint starts today</h2>
+      <p data-reveal data-delay="1">No credit card. No commitment. Just a faster, clearer way to ship.</p>
+      <div class="cta-actions" data-reveal data-delay="2">
+        <a href="#" class="btn-primary">
+          Start for free
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 7h10M8 3l4 4-4 4"/>
+          </svg>
+        </a>
+        <a href="#" class="btn-ghost">Book a demo →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <a href="#" class="footer-logo">Task<span>Flow</span></a>
+    <p class="footer-copy">© 2026 TaskFlow Inc. All rights reserved.</p>
+    <ul class="footer-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Status</a></li>
+    </ul>
+  </footer>
+
+  <!-- ── Scripts ── -->
+  <script>
+    // Floating nav on scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // Scroll-reveal via IntersectionObserver
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target); // fire once
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      revealObserver.observe(el);
+    });
+  </script>
+
+</body>
+</html>
