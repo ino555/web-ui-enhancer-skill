@@ -43,7 +43,7 @@ $base = "$env:APPDATA\Claude\local-agent-mode-sessions\skills-plugin"
 $skillsDir = Get-ChildItem $base -Recurse -Filter "skill-creator" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Parent
 $target = Join-Path $skillsDir.FullName "web-ui-enhancer"
 New-Item -ItemType Directory -Force -Path $target | Out-Null
-Invoke-WebRequest "https://raw.githubusercontent.com/YOUR_USERNAME/web-ui-enhancer-skill/main/SKILL.md" -OutFile "$target\SKILL.md"
+Invoke-WebRequest "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md" -OutFile "$target\SKILL.md"
 Write-Host "Installed to: $target"
 ```
 
@@ -53,7 +53,7 @@ BASE="$HOME/Library/Application Support/Claude/local-agent-mode-sessions/skills-
 SKILLS=$(find "$BASE" -name "skill-creator" -type d 2>/dev/null | head -1 | xargs dirname)
 mkdir -p "$SKILLS/web-ui-enhancer"
 curl -o "$SKILLS/web-ui-enhancer/SKILL.md" \
-  "https://raw.githubusercontent.com/YOUR_USERNAME/web-ui-enhancer-skill/main/SKILL.md"
+  "https://raw.githubusercontent.com/ino555/web-ui-enhancer-skill/main/SKILL.md"
 echo "Installed to: $SKILLS/web-ui-enhancer"
 ```
 
